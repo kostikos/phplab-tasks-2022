@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-class CountArgumentsTest extends TestCase
+class CountArgumentsWrapperTest extends TestCase
 {
 	protected $functions;
 
@@ -14,11 +14,16 @@ class CountArgumentsTest extends TestCase
 	/**
 	 * @dataProvider positiveDataProvider
 	 */
-	public function testPositive($input, $expected)
+	public function testException($input)
 	{
-		$this->assertEquals($expected, $this->functions->countArguments(...$input));
+		$this->expectException(InvalidArgumentException::class);
+
+		$this->functions->countArgumentsWrapper($input);
 	}
 
+	/**
+	 * @return array[]
+	 */
 	public function positiveDataProvider(): array
 	{
 		return [

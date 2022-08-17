@@ -17,6 +17,7 @@ class SayHelloArgumentWrapperTest extends TestCase
 	public function testException($arg)
 	{
 		$this->expectException(InvalidArgumentException::class);
+
 		$this->functions->sayHelloArgumentWrapper($arg);
 	}
 

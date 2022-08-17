@@ -57,11 +57,11 @@ class Functions
 	 */
 	public function sayHelloArgumentWrapper($arg): string
 	{
-		if (is_numeric($arg) || is_string($arg) || is_bool($arg)) {
-			return $this->sayHelloArgument($arg);
-		} else {
+		if (!is_numeric($arg) && !is_string($arg) && !is_bool($arg)) {
 			throw new \InvalidArgumentException('The $arg has unavailable type.');
 		}
+
+		return $this->sayHelloArgument($arg);
 	}
 
 	/**
@@ -93,6 +93,13 @@ class Functions
 	 */
 	public function countArgumentsWrapper(): array
 	{
-		// put your code here
+		$arguments = func_get_args();
+		foreach ($arguments as $arg) {
+			if (!is_string($arg)) {
+				throw new \InvalidArgumentException('The $arg element isn\'t string type.');
+			}
+		}
+
+		return $this->countArguments(...$arguments);
 	}
 }
