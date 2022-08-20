@@ -100,6 +100,6 @@ class Functions
 			}
 		}
 
-		return $this->countArguments(...$arguments);
+		return $this->countArguments($arguments);
 	}
 }
