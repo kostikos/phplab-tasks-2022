@@ -21,85 +21,86 @@ namespace functions;
 
 class Functions
 {
-	/**
-	 * Create a PhpUnit test (SayHelloTest) which will check that function below returns a correct result
-	 * i.e. returns 'Hello'
-	 *
-	 * @return string
-	 */
-	public function sayHello(): string
-	{
-		return 'Hello';
-	}
+    /**
+     * Create a PhpUnit test (SayHelloTest) which will check that function below returns a correct result
+     * i.e. returns 'Hello'
+     *
+     * @return string
+     */
+    public function sayHello(): string
+    {
+        return 'Hello';
+    }
 
-	/**
-	 * Create a PhpUnit test (SayHelloArgumentTest) which will check that function below returns a correct result
-	 * Check how it works with: number, string, bool value
-	 *
-	 * @param $arg
-	 * @return string
-	 */
-	public function sayHelloArgument($arg): string
-	{
-		return "Hello $arg";
-	}
+    /**
+     * Create a PhpUnit test (SayHelloArgumentTest) which will check that function below returns a correct result
+     * Check how it works with: number, string, bool value
+     *
+     * @param $arg
+     * @return string
+     */
+    public function sayHelloArgument($arg): string
+    {
+        return "Hello $arg";
+    }
 
-	/**
-	 * What can be put instead of placeholder
-	 * so that function throws an InvalidArgumentException if $arg is not: number, string or bool
-	 *
-	 * Create a PhpUnit test (SayHelloArgumentWrapperTest) which will check this behavior
-	 * !!! you need to test only exceptional case, since the behavior of sayHelloArgument was already tested in the task above
-	 *
-	 * @param $arg
-	 * @return string
-	 * @throws \InvalidArgumentException
-	 */
-	public function sayHelloArgumentWrapper($arg): string
-	{
-		if (!is_numeric($arg) && !is_string($arg) && !is_bool($arg)) {
-			throw new \InvalidArgumentException('The $arg has unavailable type.');
-		}
+    /**
+     * What can be put instead of placeholder
+     * so that function throws an InvalidArgumentException if $arg is not: number, string or bool
+     *
+     * Create a PhpUnit test (SayHelloArgumentWrapperTest) which will check this behavior
+     * !!! you need to test only exceptional case, since the behavior of sayHelloArgument was already tested in the task above
+     *
+     * @param $arg
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    public function sayHelloArgumentWrapper($arg): string
+    {
+        if (!is_numeric($arg) && !is_string($arg) && !is_bool($arg)) {
+            throw new \InvalidArgumentException('The $arg has unavailable type.');
+        }
 
-		return $this->sayHelloArgument($arg);
-	}
+        return $this->sayHelloArgument($arg);
+    }
 
-	/**
-	 * Create a PhpUnit test (CountArgumentsTest) which will check that function below returns correct result
-	 * Check how it works with: no arguments, one string argument, a couple of string arguments
-	 *
-	 * @return array
-	 */
-	public function countArguments(): array
-	{
-		return [
-			'argument_count' => func_num_args(),
-			'argument_values' => func_get_args(),
-		];
-	}
+    /**
+     * Create a PhpUnit test (CountArgumentsTest) which will check that function below returns correct result
+     * Check how it works with: no arguments, one string argument, a couple of string arguments
+     *
+     * @return array
+     */
+    public function countArguments(): array
+    {
+        return [
+            'argument_count' => func_num_args(),
+            'argument_values' => func_get_args(),
+        ];
+    }
 
-	/**
-	 * Fulfill a function countArgumentsWrapper so that it will call the original function (countArguments)
-	 * but check if all arguments are strings and throws an InvalidArgumentException otherwise
-	 *
-	 * Create a PhpUnit test (CountArgumentsWrapperTest) which will check this behavior
-	 * !!! you need to test only exceptional case, since the behavior of countArguments was already tested in the task above
-	 *
-	 * You will need to use "Argument unpacking via ..." to pass the parameters to wrapped function:
-	 * @see https://www.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat
-	 *
-	 * @return array
-	 * @throws \InvalidArgumentException
-	 */
-	public function countArgumentsWrapper(): array
-	{
-		$arguments = func_get_args();
-		foreach ($arguments as $arg) {
-			if (!is_string($arg)) {
-				throw new \InvalidArgumentException('The $arg element isn\'t string type.');
-			}
-		}
+    /**
+     * Fulfill a function countArgumentsWrapper so that it will call the original function (countArguments)
+     * but check if all arguments are strings and throws an InvalidArgumentException otherwise
+     *
+     * Create a PhpUnit test (CountArgumentsWrapperTest) which will check this behavior
+     * !!! you need to test only exceptional case, since the behavior of countArguments was already tested in the task above
+     *
+     * You will need to use "Argument unpacking via ..." to pass the parameters to wrapped function:
+     * @see https://www.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat
+     *
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    public function countArgumentsWrapper(): array
+    {
+        $arguments = func_get_args();
+        foreach ($arguments as $arg) {
+            if (!is_string($arg)) {
+                throw new \InvalidArgumentException('The $arg element isn\'t string type.');
+            }
+        }
 
-		return $this->countArguments($arguments);
-	}
+        return $this->countArguments($arguments);
+    }
 }
+
