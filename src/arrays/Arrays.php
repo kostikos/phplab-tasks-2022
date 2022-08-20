@@ -37,34 +37,18 @@ class Arrays implements ArraysInterface
 	public function groupByTag(array $input): array
 	{
 
-		$arrTags = $result = [];
+		$arrTags = [];
 
-		array_walk_recursive($input, function ($value, $key) use (&$arrTags) {
-			if ($key === 'tags') {
-				$arrTags[] = $value;
-			}
-		});
+        sort($input);
 
-		$arrTags = array_unique($arrTags);
+        foreach ($input as $item) {
+            foreach ($item['tags'] as $tag) {
+                $arrTags[$tag][] = $item['name'];
+                $arrTags[$tag] = array_unique($arrTags[$tag]);
+                sort($arrTags[$tag]);
+            }
+        }
 
-		foreach ($input as $arr) {
-			$arrTags = array_merge($arrTags, $arr["tags"]);
-		}
-
-		$arrTags = array_unique($arrTags);
-
-		foreach ($input as $arrElement) {
-			foreach ($arrTags as $tag) {
-				if (in_array($tag, $arrElement['tags'])) {
-					$result[$tag][] = $arrElement['name'];
-					$result[$tag] = array_unique($result[$tag]);
-					sort($result[$tag]);
-				}
-			}
-		}
-
-		ksort($result);
-
-		return $result;
+		return $arrTags;
 	}
 }
