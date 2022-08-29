@@ -44,8 +44,6 @@ class Arrays implements ArraysInterface
         foreach ($input as $item) {
             foreach ($item['tags'] as $tag) {
                 $arrTags[$tag][] = $item['name'];
-                $arrTags[$tag] = array_unique($arrTags[$tag]);
-                sort($arrTags[$tag]);
             }
         }
 
