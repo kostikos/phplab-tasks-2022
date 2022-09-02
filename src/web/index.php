@@ -12,15 +12,14 @@ const PAGE_ELEMENTS_COUNT = 20;
  * (see Filtering tasks 1 and 2 below)
  */
 if (isset($_GET["filter_by_first_letter"]) || isset($_GET["filter_by_state"])) {
-    foreach ($airports as $key => $airport) {
-        if (!empty($_GET["filter_by_first_letter"]) && $airport['name'][0] !== $_GET["filter_by_first_letter"]) {
-            unset($airports[$key]);
-            continue;
-        }
-        if (!empty($_GET["filter_by_state"]) && $airport['state'] !== $_GET["filter_by_state"]) {
-            unset($airports[$key]);
-        }
-    }
+    $airports = array_filter($airports, function ($airport) {
+        return !(
+            !empty($_GET["filter_by_first_letter"])
+            && $airport['name'][0] !== $_GET["filter_by_first_letter"]
+            || !empty($_GET["filter_by_state"])
+            && $airport['state'] !== $_GET["filter_by_state"]
+        );
+    });
 }
 
 // Sorting
@@ -31,8 +30,7 @@ if (isset($_GET["filter_by_first_letter"]) || isset($_GET["filter_by_state"])) {
  */
 if (isset($_GET["sort"])) {
     usort($airports, function ($a, $b) {
-
-        return $a===$b ? 1 : strcmp($a[$_GET["sort"]], $b[$_GET["sort"]]);
+        return $a === $b ? 1 : strcmp($a[$_GET["sort"]], $b[$_GET["sort"]]);
     });
 }
 
@@ -58,7 +56,8 @@ if (isset($_GET['page']) && $_GET['page'] != 1) {
     <meta name="description" content="">
     <title>Airports</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
 <body>
 <main role="main" class="container">

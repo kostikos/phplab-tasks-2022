@@ -11,13 +11,11 @@
  */
 function getUniqueFirstLetters(array $airports)
 {
-    $resulrt = [];
+    $result = array_unique(array_map(function ($airport) {
+        return $airport['name'][0];
+    }, $airports));
 
-    foreach ($airports as $item) {
-        $resulrt[] = $item['name'][0];
-    }
-    $resulrt = array_unique($resulrt);
-    sort($resulrt);
+    sort($result);
 
-    return $resulrt;
+    return $result;
 }
