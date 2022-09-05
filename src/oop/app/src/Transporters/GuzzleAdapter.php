@@ -9,11 +9,6 @@ class GuzzleAdapter implements TransportInterface
 {
     private $client;
 
-    public function __construct()
-    {
-        $this->client = new Client();
-    }
-
     /**
      * @param string $url
      * @return string
@@ -21,13 +16,9 @@ class GuzzleAdapter implements TransportInterface
      */
     public function getContent(string $url): string
     {
+        $this->client = new Client();
         $response = $this->client->get($url);
         $result = $response->getBody()->getContents();
-        $charset = substr(strstr($response->getHeader('content-type')[0], 'charset='), 8);
-
-        if (strtoupper($charset) != 'UTF_8') {
-            $result = iconv($charset, "UTF-8", $result);
-        }
 
         return $result;
     }

@@ -22,20 +22,22 @@ class Scrapper
      * @param $transporter
      * @param $parser
      */
-    public function __construct( $transporter, $parser)
+    public function __construct($transporter, $parser)
     {
         $this->parser = $parser;
         $this->transporter = $transporter;
-        $this->movie=new Movie();
+        $this->movie = new Movie();
     }
 
     /**
      * @param $url
      * @return Movie
      */
-    public function getMovie($url): Movie
+    public function getMovie(string $url): Movie
     {
-        $data = $this->parser->parseContent($this->transporter->getContent($url));
+        $content = $this->transporter->getContent($url);
+        $data = $this->parser->parseContent($content);
+
         $this->movie->setTitle($data['title']);
         $this->movie->setPoster($data['poster']);
         $this->movie->setDescription($data['description']);

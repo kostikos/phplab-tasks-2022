@@ -13,6 +13,14 @@ class FilmixParserStrategy implements ParserInterface
      */
     public function parseContent(string $siteContent)
     {
+        if (preg_match('%<meta[^>]+charset=[\'"]?([\w-]+)%i', $siteContent, $matches)) {
+            $charset = $matches[1];
+        }
+
+        if (!empty($charset) && strtoupper($charset) != 'UTF_8') {
+            $siteContent = iconv($charset, "UTF-8", $siteContent);
+        }
+
         preg_match('#<h1 class="name" itemprop="name">(.*?)</h1>#', $siteContent, $arResult['title']);
         preg_match('#<div class="full-story">(.*?)</div>#', $siteContent, $arResult['description']);
         preg_match('#<img src="(.*?)" class="poster poster-tooltip"#', $siteContent, $arResult['img']);
