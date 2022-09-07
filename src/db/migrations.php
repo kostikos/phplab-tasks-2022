@@ -21,7 +21,7 @@
  *   - name (varchar)
  */
 
-/** @var \PDO $pdo */
+/** @var PDO $pdo */
 require_once './pdo_ini.php';
 
 // cities
@@ -34,6 +34,41 @@ CREATE TABLE `cities` (
 SQL;
 $pdo->exec($sql);
 
-// TODO states
+// states
+$sql = <<<'SQL'
+CREATE TABLE `states` (
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
+	PRIMARY KEY (`id`)
+);
+SQL;
+$pdo->exec($sql);
 
-// TODO airports
+// airports
+$sql = <<<'SQL'
+CREATE TABLE `airports` (
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(120) NOT NULL COLLATE 'utf8_general_ci',
+	`code` VARCHAR(3) NOT NULL COLLATE 'utf8_general_ci',
+	`city_id` INT(10) UNSIGNED NOT NULL,
+	`state_id` INT(10) UNSIGNED NOT NULL,
+	`address` VARCHAR(120) NOT NULL COLLATE 'utf8_general_ci',
+	`timezone` VARCHAR(80) NOT NULL COLLATE 'utf8_general_ci',
+	PRIMARY KEY (`id`),
+	INDEX `city_idx` (`city_id` ASC) VISIBLE,
+    INDEX `state_idx` (`state_id` ASC) VISIBLE,
+    CONSTRAINT `cities`
+        FOREIGN KEY (`city_id`)
+        REFERENCES `airports`.`cities` (`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT `states`
+        FOREIGN KEY (`state_id`)
+        REFERENCES `airports`.`states` (`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+SQL;
+$pdo->exec($sql);
+
