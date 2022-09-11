@@ -2,13 +2,24 @@
 /**
  * Connect to DB
  */
+/** @var PDO $pdo */
+require_once './pdo_ini.php';
+
+const PAGE_ELEMENTS_COUNT = 5;
 
 /**
  * SELECT the list of unique first letters using https://www.w3resource.com/mysql/string-functions/mysql-left-function.php
  * and https://www.w3resource.com/sql/select-statement/queries-with-distinct.php
  * and set the result to $uniqueFirstLetters variable
  */
-$uniqueFirstLetters = ['A', 'B', 'C'];
+$sth = $pdo->prepare('SELECT DISTINCT LEFT(name,1)  FROM airports ORDER BY LEFT(name,1) ASC');
+$sth->setFetchMode(PDO::FETCH_ASSOC);
+$sth->execute();
+$uniqueFirstLetters = $sth->fetchAll();
+
+array_walk($uniqueFirstLetters, function (&$value) {
+    $value = $value['LEFT(name,1)'];
+});
 
 // Filtering
 /**
@@ -20,6 +31,15 @@ $uniqueFirstLetters = ['A', 'B', 'C'];
  * For filtering by state you will need to JOIN states table and check if states.name = A
  * where A - requested filter value
  */
+$filterByFirstLetter = $filterByState = '%';
+
+if (isset($_GET["filter_by_first_letter"])) {
+    $filterByFirstLetter = $_GET["filter_by_first_letter"] . '%';
+}
+
+if (isset($_GET["filter_by_state"])) {
+    $filterByState = $_GET["filter_by_state"];
+}
 
 // Sorting
 /**
@@ -30,6 +50,15 @@ $uniqueFirstLetters = ['A', 'B', 'C'];
  * For sorting use ORDER BY A
  * where A - requested filter value
  */
+$sortConditions = '';
+
+if (isset($_GET["sort"])) {
+    $sortConditions = match ($_GET["sort"]) {
+        $_GET["sort"] == 'city_name' => 'ORDER BY cities.name ASC ',
+        $_GET["sort"] == 'state_name' => 'ORDER BY states.name ASC ',
+        default => 'ORDER BY airports.' . $_GET["sort"] . ' ASC ',
+    };
+}
 
 // Pagination
 /**
@@ -40,6 +69,26 @@ $uniqueFirstLetters = ['A', 'B', 'C'];
  * For pagination use LIMIT
  * To get the number of all airports matched by filter use COUNT(*) in the SELECT statement with all filters applied
  */
+$sth = $pdo->prepare("
+    SELECT  COUNT(*) as count
+    FROM airports  
+    LEFT JOIN cities ON airports.city_id=cities.id  
+    LEFT JOIN states ON airports.state_id=states.id  
+    WHERE airports.name LIKE :filterByFirstLetter  AND states.name LIKE :filterByState
+    $sortConditions
+");
+$sth->bindValue(':filterByFirstLetter', $filterByFirstLetter, PDO::PARAM_STR);
+$sth->bindValue(':filterByState', $filterByState, PDO::PARAM_STR);
+$sth->setFetchMode(PDO::FETCH_ASSOC);
+$sth->execute();
+$elementCount = $sth->fetchColumn();
+
+$pageNavigationStart = 0;
+$pageElementsCount = PAGE_ELEMENTS_COUNT;
+
+if (isset($_GET['page']) && $_GET['page'] != '1') {
+    $pageNavigationStart = $_GET['page'] * PAGE_ELEMENTS_COUNT;
+}
 
 /**
  * Build a SELECT query to DB with all filters / sorting / pagination
@@ -48,6 +97,24 @@ $uniqueFirstLetters = ['A', 'B', 'C'];
  * For city_name and state_name fields you can use alias https://www.mysqltutorial.org/mysql-alias/
  */
 $airports = [];
+
+$sth = $pdo->prepare("
+    SELECT  airports.name as name, airports.code as code, airports.address as address, airports.timezone as timezone, states.name as state_name,  cities.name as city_name 
+    FROM airports  
+    LEFT JOIN cities ON airports.city_id=cities.id  
+    LEFT JOIN states ON airports.state_id=states.id  
+    WHERE airports.name LIKE :filterByFirstLetter  AND states.name LIKE :filterByState
+    $sortConditions
+    LIMIT :pageNavigationStart, :countElements
+    ");
+
+$sth->bindParam(':countElements', $pageElementsCount, PDO::PARAM_INT);
+$sth->bindParam(':pageNavigationStart', $pageNavigationStart, PDO::PARAM_INT);
+$sth->bindValue(':filterByFirstLetter', $filterByFirstLetter, PDO::PARAM_STR);
+$sth->bindValue(':filterByState', $filterByState, PDO::PARAM_STR);
+$sth->setFetchMode(PDO::FETCH_ASSOC);
+$sth->execute();
+$airports = $sth->fetchAll();
 ?>
 <!doctype html>
 <html lang="en">
@@ -78,10 +145,12 @@ $airports = [];
         Filter by first letter:
 
         <?php foreach ($uniqueFirstLetters as $letter): ?>
-            <a href="#"><?= $letter ?></a>
+            <a href="?<?= http_build_query(array_merge($_GET, ['filter_by_first_letter' => $letter, 'page' => 1])); ?>">
+                <?= $letter ?>
+            </a>
         <?php endforeach; ?>
 
-        <a href="/" class="float-right">Reset all filters</a>
+        <a href="<?= $_SERVER["SCRIPT_NAME"]; ?>" class="float-right">Reset all filters</a>
     </div>
 
     <!--
@@ -97,10 +166,18 @@ $airports = [];
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="#">Name</a></th>
-            <th scope="col"><a href="#">Code</a></th>
-            <th scope="col"><a href="#">State</a></th>
-            <th scope="col"><a href="#">City</a></th>
+            <th scope="col">
+                <a href="?<?= http_build_query(array_merge($_GET, ["sort" => 'name'])); ?>">Name</a>
+            </th>
+            <th scope="col">
+                <a href="?<?= http_build_query(array_merge($_GET, ["sort" => 'code'])); ?>">Code</a>
+            </th>
+            <th scope="col">
+                <a href="?<?= http_build_query(array_merge($_GET, ["sort" => 'state_name'])); ?>">State</a>
+            </th>
+            <th scope="col">
+                <a href="?<?= http_build_query(array_merge($_GET, ["sort" => 'city_name'])); ?>">City</a>
+            </th>
             <th scope="col">Address</th>
             <th scope="col">Timezone</th>
         </tr>
@@ -117,14 +194,18 @@ $airports = [];
                i.e. if you have filter_by_first_letter set you can additionally use filter_by_state
         -->
         <?php foreach ($airports as $airport): ?>
-        <tr>
-            <td><?= $airport['name'] ?></td>
-            <td><?= $airport['code'] ?></td>
-            <td><a href="#"><?= $airport['state_name'] ?></a></td>
-            <td><?= $airport['city_name'] ?></td>
-            <td><?= $airport['address'] ?></td>
-            <td><?= $airport['timezone'] ?></td>
-        </tr>
+            <tr>
+                <td><?= $airport['name'] ?></td>
+                <td><?= $airport['code'] ?></td>
+                <td>
+                    <a href="?<?= http_build_query(array_merge($_GET, ["filter_by_state" => $airport['state_name'], 'page' => 1])); ?>">
+                        <?= $airport['state_name'] ?>
+                    </a>
+                </td>
+                <td><?= $airport['city_name'] ?></td>
+                <td><?= $airport['address'] ?></td>
+                <td><?= $airport['timezone'] ?></td>
+            </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
@@ -138,13 +219,20 @@ $airports = [];
          - use page key (i.e. /?page=1)
          - when you apply pagination - all filters and sorting are not reset
     -->
-    <nav aria-label="Navigation">
-        <ul class="pagination justify-content-center">
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-        </ul>
-    </nav>
+    <?php if ($elementCount > PAGE_ELEMENTS_COUNT) { ?>
+        <nav aria-label="Navigation">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i < (ceil($elementCount / PAGE_ELEMENTS_COUNT)); $i++) { ?>
+                    <li class="page-item <?= (isset($_GET['page']) && $i == $_GET['page']) ? 'active' : ''; ?>">
+                        <a class="page-link"
+                           href="?<?= http_build_query(array_merge($_GET, ["page" => $i])); ?>">
+                            <?= $i ?>
+                        </a>
+                    </li>
+                <?php } ?>
+            </ul>
+        </nav>
+    <?php } ?>
 
 </main>
 </html>
